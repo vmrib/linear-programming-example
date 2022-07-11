@@ -1,0 +1,52 @@
+CC              = gcc
+CFLAGS          = -Wall -Wextra -std=gnu17 -I$(INCLUDEDIR) 
+CFLAGS_DEBUG    = $(CFLAGS) -g -DDEBUG
+LDFLAGS			= -L$(LIBDIR) -llpsolve55
+
+BUILDDIR        = build
+INCLUDEDIR      = include
+LIBDIR          = lib
+SOURCEDIR       = source
+TESTSDIR        = tests
+
+LPSOLVEDIR		= $(LIBDIR)/source/lp_solve_5.5/lpsolve55
+LPSOLVEINSTALL	= ccc
+
+SOURCES         := $(shell find $(SOURCEDIR) -name "*.c")
+OBJECTS         := $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(SOURCES)))
+LIBS			:= $(addprefix $(LIBDIR)/, liblpsolve55.a)
+TARGET          := despacho
+
+.PHONY: all test run clean debug purge
+
+all: $(TARGET)
+
+debug: CFLAGS := $(CFLAGS_DEBUG)
+debug: $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+
+clean:
+	rm -rf $(BUILDDIR) $(TARGET)
+
+purge:
+	rm -rf $(BUILDDIR) $(LIBS) $(TARGET)
+
+$(TARGET): $(OBJECTS) | $(LIBS)
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+
+$(OBJECTS): $(SOURCES) | $(BUILDDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+$(LIBS):
+	@echo Building lpsolve...
+	@pushd $(LPSOLVEDIR)/ > /dev/null 2>&1; \
+	chmod +x $(LPSOLVEINSTALL) > /dev/null 2>&1; \
+	./$(LPSOLVEINSTALL) > /dev/null 2>&1; \
+	popd > /dev/null 2>&1; \
+	cp $(LPSOLVEDIR)/bin/ux64/liblpsolve55.a $(LIBDIR) > /dev/null 2>&1
+	
