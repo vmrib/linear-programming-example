@@ -64,7 +64,7 @@ int main(int argc, char const *argv[])
     set_add_rowmode(lp, FALSE);
 
     // funcao objetivo 143x + 60y
-    if (!set_obj_fnex(lp, ncols, (double[]){143, 160}, (int[]){1, 2}))
+    if (!set_obj_fnex(lp, ncols, (double[]){143, 60}, (int[]){1, 2}))
     {
         printf("Erro ao adicionar linha\n");
         return EXIT_FAILURE;
