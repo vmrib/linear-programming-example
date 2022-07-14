@@ -1,5 +1,5 @@
 CC              = gcc
-CFLAGS          = -Wall -Wextra -std=gnu17 -I$(INCLUDEDIR) -I$(LPSOLVEDIR)
+CFLAGS          = -Wall -std=gnu17 -I$(INCLUDEDIR) -I$(LPSOLVEDIR)
 CFLAGS_DEBUG    = $(CFLAGS) -g -DDEBUG
 LDFLAGS			= -L$(LIBDIR) -llpsolve55 -lm
 
