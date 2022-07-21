@@ -47,6 +47,33 @@ int main(int argc, char const *argv[])
     lprec *lp = make_lp(0, ncols);
     CHECK(lp, "Erro na criacao do PL");
 
+    // char ti_T_str[1024];
+    // char wi_H_str[1024];
+    // char zi_H_str[1024];
+    // char vouti_H_str[1024];
+    // char vi_H_str[1024];
+
+    // strncpy(ti_T_str, "ti_T", 1023);
+    // strncpy(wi_H_str, "wi_H", 1023);
+    // strncpy(zi_H_str, "zi_H", 1023);
+    // strncpy(vouti_H_str, "vouti_H", 1023);
+    // strncpy(vi_H_str, "vi_H", 1023);
+
+    // for (int i = 0; i < meses; i++)
+    // {
+    //     ti_T_str[1] = i + '0';
+    //     wi_H_str[1] = i + '0';
+    //     zi_H_str[1] = i + '0';
+    //     vouti_H_str[4] = i + '0';
+    //     vi_H_str[1] = i + '0';
+
+    //     set_col_name(lp, get_colno(TI_T, meses, i), ti_T_str);
+    //     set_col_name(lp, get_colno(WI_H, meses, i), wi_H_str);
+    //     set_col_name(lp, get_colno(ZI_H, meses, i), zi_H_str);
+    //     set_col_name(lp, get_colno(VOUTI_H, meses, i), vouti_H_str);
+    //     set_col_name(lp, get_colno(VI_H, meses, i), vi_H_str);
+    // }
+
     set_add_rowmode(lp, TRUE);
 
     for (int i = 0; i < meses; i++)
