@@ -1,7 +1,7 @@
 CC              = gcc
 CFLAGS          = -Wall -std=gnu17 -I$(INCLUDEDIR) -I$(LPSOLVEDIR)
 CFLAGS_DEBUG    = $(CFLAGS) -g -DDEBUG
-LDFLAGS			= -L$(LIBDIR) -llpsolve55 -lm
+LDFLAGS			= -L$(LIBDIR) -llpsolve55 -lm -ldl
 
 BUILDDIR        = build
 INCLUDEDIR      = include

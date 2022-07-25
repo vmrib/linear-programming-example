@@ -1,11 +1,15 @@
 #include <assert.h>
 #include "lp_lib.h"
 
+/*
+ * Macro para checagem de erros
+ */
 #define CHECK(condition, message) assert((condition) && message)
+
 typedef enum coltype_t
 {
-    TI_T,
-    WI_H,
+    TI_T, // geraçao mensal da termoelétrica
+    WI_H, //
     ZI_H,
     VOUTI_H,
     VI_H,
@@ -39,27 +43,16 @@ int main(int argc, char const *argv[])
 
     // ti_T*n + wi_H*n + zi_H*n + vouti_H*n + vi_H*n, n = meses
     int ncols = meses * 5;
-    // double sparserow[3];
-    // int colno[3];
 
     lprec *lp = make_lp(0, ncols);
     CHECK(lp, "Erro na criacao do PL");
 
     set_add_rowmode(lp, TRUE);
 
-    // colno[0] = get_colno(VI_H, meses, 0);
-    // sparserow[0] = 1;
-    // 1 * v0 = vini
-    // CHECK(
-    //     add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(VI_H, meses, 0)}, EQ, vini),
-    //     "Erro ao inserir restricao");
-
     for (int i = 0; i < meses; i++)
     {
         // 1 * ti_T <= tmax_T
-        CHECK(
-            add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(TI_T, meses, i)}, LE, tmax),
-            "Erro ao inserir restricao");
+        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(TI_T, meses, i)}, LE, tmax);
 
         // 1 * ti_T + k_H * vouti_H >= di
         add_constraintex(lp, 2,
@@ -83,7 +76,7 @@ int main(int argc, char const *argv[])
                          },
                          EQ, afluencias[i]);
 
-        // vi_H - v(i-1)_H + vouti_H = yi_H
+        // v0_H + vout0_H = vini + y0_H
         if (i == 0)
             add_constraintex(lp, 2,
                              (double[]){1, 1},
@@ -92,6 +85,8 @@ int main(int argc, char const *argv[])
                                  get_colno(VOUTI_H, meses, i),
                              },
                              EQ, vini + afluencias[i]);
+
+        // vi_H - v(i-1)_H + vouti_H = yi_H
         else
             add_constraintex(lp, 3,
                              (double[]){1, -1, 1},
@@ -125,6 +120,8 @@ int main(int argc, char const *argv[])
 
     write_LP(lp, stdout);
 
+    // Resolve o PL
+    /*
     int ret = solve(lp);
 
     printf("Objective value: %f\n", get_objective(lp));
@@ -132,7 +129,7 @@ int main(int argc, char const *argv[])
     double *vars;
     get_ptr_variables(lp, &vars);
     for (int i = 0; i < ncols; i++)
-        printf("%s: %lf\n", get_col_name(lp, i + 1), vars[i]);
+        printf("%s: %lf\n", get_col_name(lp, i + 1), vars[i]); */
 
     free(demandas);
     free(afluencias);
