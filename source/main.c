@@ -8,13 +8,19 @@
 
 typedef enum coltype_t
 {
-    TI_T, // geraçao mensal da termoelétrica
-    WI_H, //
-    ZI_H,
-    VOUTI_H,
-    VI_H,
+    TI,    // geraçao mensal da termoelétrica
+    WI,    // variação positiva do volume do reservatório
+    ZI,    // variação negativa do volume do reservatório
+    VOUTI, // volume de saída de água mensal do reservatório
+    VI,    // volume mensal do reservatório
 } coltype_t;
 
+/*
+ * Retorna a coluna correnspondente a uma variável no PL.
+ * type: tipo da variável
+ * n: total de meses no plano de geração de energia
+ * index: mês específico - 1 (0..n-1)
+ */
 int get_colno(coltype_t type, int n, int index)
 {
     return type * n + index + 1;
@@ -41,122 +47,103 @@ int main(int argc, char const *argv[])
     scanf("%lf %lf %lf %lf", &vini, &vmin, &vmax, &k);
     scanf("%lf %lf %lf", &tmax, &ct, &ca);
 
-    // ti_T*n + wi_H*n + zi_H*n + vouti_H*n + vi_H*n, n = meses
+    // PL tem cinco variáveis "mensais": ti, wi, zi, vouti, vi
+    // como i \e [1..n], onde n é o número de meses, obtemos um PL
+    // com 5n colunas
     int ncols = meses * 5;
 
     lprec *lp = make_lp(0, ncols);
     CHECK(lp, "Erro na criacao do PL");
 
-    // char ti_T_str[1024];
-    // char wi_H_str[1024];
-    // char zi_H_str[1024];
-    // char vouti_H_str[1024];
-    // char vi_H_str[1024];
-
-    // strncpy(ti_T_str, "ti_T", 1023);
-    // strncpy(wi_H_str, "wi_H", 1023);
-    // strncpy(zi_H_str, "zi_H", 1023);
-    // strncpy(vouti_H_str, "vouti_H", 1023);
-    // strncpy(vi_H_str, "vi_H", 1023);
-
-    // for (int i = 0; i < meses; i++)
-    // {
-    //     ti_T_str[1] = i + '0';
-    //     wi_H_str[1] = i + '0';
-    //     zi_H_str[1] = i + '0';
-    //     vouti_H_str[4] = i + '0';
-    //     vi_H_str[1] = i + '0';
-
-    //     set_col_name(lp, get_colno(TI_T, meses, i), ti_T_str);
-    //     set_col_name(lp, get_colno(WI_H, meses, i), wi_H_str);
-    //     set_col_name(lp, get_colno(ZI_H, meses, i), zi_H_str);
-    //     set_col_name(lp, get_colno(VOUTI_H, meses, i), vouti_H_str);
-    //     set_col_name(lp, get_colno(VI_H, meses, i), vi_H_str);
-    // }
-
-    set_add_rowmode(lp, TRUE);
+    set_add_rowmode(lp, TRUE); // modo de inserção de linhas
 
     for (int i = 0; i < meses; i++)
     {
-        // 1 * ti_T <= tmax_T
-        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(TI_T, meses, i)}, LE, tmax);
+        // Restrições
+        // 1*ti <= tmax
+        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(TI, meses, i)}, LE, tmax);
 
-        // 1 * ti_T + k_H * vouti_H >= di
+        // 1*ti + k*vouti >= di
         add_constraintex(lp, 2,
                          (double[]){1, k},
-                         (int[]){get_colno(TI_T, meses, i), get_colno(VOUTI_H, meses, i)},
+                         (int[]){get_colno(TI, meses, i), get_colno(VOUTI, meses, i)},
                          GE, demandas[i]);
 
-        // vi_H <= vmax
-        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(VI_H, meses, i)}, LE, vmax);
+        // vi <= vmax
+        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(VI, meses, i)}, LE, vmax);
 
-        // vi_H >= vmin
-        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(VI_H, meses, i)}, GE, vmin);
+        // vi >= vmin
+        add_constraintex(lp, 1, (double[]){1}, (int[]){get_colno(VI, meses, i)}, GE, vmin);
 
-        // vouti_H + wi_H - zi_H = yi_H
+        // vouti + wi - zi = yi
         add_constraintex(lp, 3,
                          (double[]){1, 1, -1},
                          (int[]){
-                             get_colno(VOUTI_H, meses, i),
-                             get_colno(WI_H, meses, i),
-                             get_colno(ZI_H, meses, i),
+                             get_colno(VOUTI, meses, i),
+                             get_colno(WI, meses, i),
+                             get_colno(ZI, meses, i),
                          },
                          EQ, afluencias[i]);
 
-        // v0_H + vout0_H = vini + y0_H
+        // como vo = vini:
+        // v1 + vout1 = vini + y1
         if (i == 0)
             add_constraintex(lp, 2,
                              (double[]){1, 1},
                              (int[]){
-                                 get_colno(VI_H, meses, 0),
-                                 get_colno(VOUTI_H, meses, i),
+                                 get_colno(VI, meses, 0),
+                                 get_colno(VOUTI, meses, i),
                              },
                              EQ, vini + afluencias[i]);
 
-        // vi_H - v(i-1)_H + vouti_H = yi_H
+        // vi - v(i-1) + vouti = yi
         else
             add_constraintex(lp, 3,
                              (double[]){1, -1, 1},
                              (int[]){
-                                 get_colno(VI_H, meses, i),
-                                 get_colno(VI_H, meses, i - 1),
-                                 get_colno(VOUTI_H, meses, i),
+                                 get_colno(VI, meses, i),
+                                 get_colno(VI, meses, i - 1),
+                                 get_colno(VOUTI, meses, i),
                              },
                              EQ, afluencias[i]);
     }
 
-    set_add_rowmode(lp, FALSE);
+    set_add_rowmode(lp, FALSE); // fim do modo de inserção
 
     int *objcolno = calloc(meses * 3, sizeof(*objcolno));
     double *objrow = calloc(meses * 3, sizeof(*objrow));
 
+    // sT = CT*sum(ti, i=1..n) + CA*sum(wi, i=1..n) + CA*sum(zi, i=1..n)
     for (int i = 0; i < meses; i++)
     {
-        objcolno[i] = get_colno(TI_T, meses, i);
+        objcolno[i] = get_colno(TI, meses, i);
         objrow[i] = ct;
 
-        objcolno[i + meses] = get_colno(WI_H, meses, i);
+        objcolno[i + meses] = get_colno(WI, meses, i);
         objrow[i + meses] = ca;
 
-        objcolno[i + 2 * meses] = get_colno(ZI_H, meses, i);
+        objcolno[i + 2 * meses] = get_colno(ZI, meses, i);
         objrow[i + 2 * meses] = ca;
     }
 
     set_obj_fnex(lp, meses * 3, objrow, objcolno);
-    set_minim(lp);
+    set_minim(lp); // minimizar função objetivo
 
-    write_LP(lp, stdout);
+    write_LP(lp, stdout); // escreve LP no formato lpsolve
 
-    // Resolve o PL
-    /*
-    int ret = solve(lp);
+// Resolve o PL
+#ifdef RESULT
 
+    solve(lp);
+
+    printf("\nResults\n\n");
     printf("Objective value: %f\n", get_objective(lp));
 
     double *vars;
     get_ptr_variables(lp, &vars);
     for (int i = 0; i < ncols; i++)
-        printf("%s: %lf\n", get_col_name(lp, i + 1), vars[i]); */
+        printf("%s: %lf\n", get_col_name(lp, i + 1), vars[i]);
+#endif
 
     free(demandas);
     free(afluencias);

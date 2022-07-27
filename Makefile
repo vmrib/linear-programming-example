@@ -1,6 +1,7 @@
 CC              = gcc
 CFLAGS          = -Wall -std=gnu17 -I$(INCLUDEDIR) -I$(LPSOLVEDIR)
 CFLAGS_DEBUG    = $(CFLAGS) -g -DDEBUG
+CFLAGS_RESULT	= $(CFLAGS) -DRESULT
 LDFLAGS			= -L$(LIBDIR) -llpsolve55 -lm -ldl
 
 BUILDDIR        = build
@@ -10,7 +11,7 @@ SOURCEDIR       = source
 TESTSDIR        = tests
 
 LPSOLVEDIR			= $(LIBDIR)/source/lp_solve_5.5
-LPSOLVEINSTALLDIR	= $(LIBSOLVEDIR)/lpsolve55
+LPSOLVEINSTALLDIR	= $(LPSOLVEDIR)/lpsolve55
 LPSOLVEINSTALL		= ccc
 
 SOURCES         := $(shell find $(SOURCEDIR) -name "*.c")
@@ -18,9 +19,12 @@ OBJECTS         := $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(SOURCES)))
 LIBS			:= $(addprefix $(LIBDIR)/, liblpsolve55.a)
 TARGET          := despacho
 
-.PHONY: all test run clean debug purge
+.PHONY: all result run clean debug purge
 
 all: $(TARGET)
+
+result: CFLAGS := $(CFLAGS_RESULT)
+result: $(TARGET)
 
 debug: CFLAGS := $(CFLAGS_DEBUG)
 debug: $(TARGET)
