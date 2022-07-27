@@ -1,3 +1,13 @@
+==> Estrutura do projeto
+- doc: documentos sobre modelo e implementação
+- source: código fonte
+- include: arquivos cabeçalho
+- lib: bibliotecas e códigos fonte das bibliotecas
+- build: arquivos objetos
+- example.txt: exemplo de entrada
+- despacho: executável
+
+==> Compilação e execução
 Além do como "normal" de funcionamento, o programa pode ser compilado no modo
 "resultado". Nesse modo, além de escrever a saída do modelo em stdout, o
 programa também resolve e exibe o resultado do PL, incluindo comentários sobre
