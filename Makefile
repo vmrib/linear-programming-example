@@ -19,7 +19,7 @@ OBJECTS         := $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(SOURCES)))
 LIBS			:= $(addprefix $(LIBDIR)/, liblpsolve55.a)
 TARGET          := despacho
 
-.PHONY: all result run test clean debug purge
+.PHONY: all result run clean debug purge
 
 all: $(TARGET)
 
