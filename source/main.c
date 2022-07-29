@@ -17,7 +17,7 @@ typedef enum coltype_t
 } coltype_t;
 
 /*
- * Retorna a coluna correnspondente a uma variável no PL.
+ * Retorna a coluna da matriz A correnspondente a uma variável no PL.
  * type: tipo da variável
  * n: total de meses no plano de geração de energia
  * index: mês específico - 1 (0..n-1)
@@ -49,7 +49,7 @@ int main(int argc, char const *argv[])
     scanf("%lf %lf %lf", &tmax, &ct, &ca);
 
     // PL tem cinco variáveis "mensais": ti, wi, zi, vouti, vi
-    // como i \e [1..n], onde n é o número de meses, obtemos um PL
+    // como i pertence a [1..n], onde n é o número de meses, obtemos um PL
     // com 5n colunas
     int ncols = meses * 5;
 
@@ -130,7 +130,7 @@ int main(int argc, char const *argv[])
     set_obj_fnex(lp, meses * 3, objrow, objcolno);
     set_minim(lp); // minimizar função objetivo
 
-    write_LP(lp, stdout); // escreve LP no formato lpsolve
+    write_LP(lp, stdout); // escreve PL no formato lpsolve
 
 // Resolve o PL
 #ifdef RESULT
